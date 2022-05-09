@@ -1,0 +1,232 @@
+<html>
+  <head>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-stock.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/v8/js/anychart-data-adapter.min.js"></script>
+    <script src="./getData.js"></script>
+    <link
+      href="https://cdn.anychart.com/releases/v8/css/anychart-ui.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.anychart.com/releases/v8/fonts/css/anychart-font.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <style type="text/css">
+      html,
+      body,
+      #container {
+        width: 100%;
+        height: 900px;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <script>
+      anychart.onDocumentReady(function () {
+        // The data used in this sample can be obtained from the CDN
+        // https://cdn.anychart.com/samples/stock-event-markers/stock-chart-with-event-markers/data.csv
+
+        var dataTable = anychart.data.table();
+        dataTable.addData(get_binance_data());
+
+        // map loaded data for the ohlc series
+        var mapping = dataTable.mapAs({
+          open: 1,
+          high: 2,
+          low: 3,
+          close: 4,
+          value: 5,
+          buyVol: 6,
+          sellVol: 7,
+        });
+
+        mappingVolBuy = dataTable.mapAs();
+        mappingVolBuy.addField("value", 6);
+
+        mappingVolSell = dataTable.mapAs();
+        mappingVolSell.addField("value", 7);
+
+        mappingDealsQty = dataTable.mapAs();
+        mappingDealsQty.addField("value", 8);
+
+        mappingDealsQtyBuy = dataTable.mapAs();
+        mappingDealsQtyBuy.addField("value", 9);
+
+        mappingDealsQtySell = dataTable.mapAs();
+        mappingDealsQtySell.addField("value", 10);
+
+        mappingVol01Bids = dataTable.mapAs();
+        mappingVol01Bids.addField("value", 11);
+
+        mappingVol01Asks = dataTable.mapAs();
+        mappingVol01Asks.addField("value", 12);
+
+        mappingVol02Bids = dataTable.mapAs();
+        mappingVol02Bids.addField("value", 13);
+
+        mappingVol02Asks = dataTable.mapAs();
+        mappingVol02Asks.addField("value", 14);
+
+        mappingVol1Bids = dataTable.mapAs();
+        mappingVol1Bids.addField("value", 15);
+
+        mappingVol1Asks = dataTable.mapAs();
+        mappingVol1Asks.addField("value", 16);
+
+        // create stock chart
+        var chart = anychart.stock();
+
+        // set chart title
+        chart.title("SOLUSDT Futures");
+
+        // create first plot on the chart and set settings
+        var plot = chart.plot(0);
+        plot
+          .height("200px")
+          .yGrid(true)
+          .xGrid(true)
+          .yMinorGrid(true)
+          .xMinorGrid(true);
+
+        // create candlestick series
+        var series = plot.candlestick(mapping);
+        series.name("SOLUSDT Futures");
+        series.legendItem().iconType("rising-falling");
+
+        // create second plot
+        var volumePlot = chart.plot(1);
+        volumePlot
+          .height("200px")
+          .yGrid(true)
+          .xGrid(true)
+          .yMinorGrid(true)
+          .xMinorGrid(true);
+        // set yAxis labels formatter
+        volumePlot.yAxis().labels().format("{%Value}{scale:(1000)(1)|(k)}");
+        // set crosshair y-label formatter
+        volumePlot.crosshair().yLabel().format("{%Value}{scale:(1000)(1)|(k)}");
+
+        volumeSeriesBuy = volumePlot.line(mappingVolBuy);
+        volumeSeriesBuy.name("Volume buy");
+
+        volumeSeriesSell = volumePlot.line(mappingVolSell);
+        volumeSeriesSell.name("Volume sell");
+
+        // create volume series on the plot
+        var volumeSeries = volumePlot.line(mapping);
+        // set series settings
+        volumeSeries.name("Volume");
+
+        // create third plot
+        var QtyPlot = chart.plot(2);
+        QtyPlot.height("200px")
+          .yGrid(true)
+          .xGrid(true)
+          .yMinorGrid(true)
+          .xMinorGrid(true);
+        // set yAxis labels formatter
+        QtyPlot.yAxis().labels().format("{%Value}{scale:(1)(1)|()}");
+        // set crosshair y-label formatter
+        QtyPlot.crosshair().yLabel().format("{%Value}{scale:(1)(1)|()}");
+
+        QtySeries = QtyPlot.line(mappingDealsQty);
+        QtySeries.name("DealsQty");
+
+        QtySeriesBuy = QtyPlot.line(mappingDealsQtyBuy);
+        QtySeriesBuy.name("DealsQtyBuy");
+
+        // create volume series on the plot
+        var QtySeriesSell = QtyPlot.line(mappingDealsQtySell);
+        // set series settings
+        QtySeriesSell.name("DealsQtySell");
+
+        ////////////////////////////////////////
+        // create fourth plot
+        var VolDepth01Plot = chart.plot(3);
+        VolDepth01Plot.height("200px")
+          .yGrid(true)
+          .xGrid(true)
+          .yMinorGrid(true)
+          .xMinorGrid(true);
+        // set yAxis labels formatter
+        VolDepth01Plot.yAxis().labels().format("{%Value}{scale:(1)(1)|()}");
+        // set crosshair y-label formatter
+        VolDepth01Plot.crosshair().yLabel().format("{%Value}{scale:(1)(1)|()}");
+
+        Vol01BidSeries = VolDepth01Plot.line(mappingVol01Bids);
+        Vol01BidSeries.name("Vol01Bids");
+
+        Vol01AskSeries = VolDepth01Plot.line(mappingVol01Asks);
+        Vol01AskSeries.name("Vol01Asks");
+
+        ////////////////////////////////////////////////
+
+        ////////////////////////////////////////
+        // create fifth plot
+        var VolDepth02Plot = chart.plot(4);
+        VolDepth02Plot.height("200px")
+          .yGrid(true)
+          .xGrid(true)
+          .yMinorGrid(true)
+          .xMinorGrid(true);
+        // set yAxis labels formatter
+        VolDepth02Plot.yAxis().labels().format("{%Value}{scale:(1)(1)|()}");
+        // set crosshair y-label formatter
+        VolDepth02Plot.crosshair().yLabel().format("{%Value}{scale:(1)(1)|()}");
+
+        Vol02BidSeries = VolDepth02Plot.line(mappingVol02Bids);
+        Vol02BidSeries.name("Vol02Bids");
+
+        Vol02AskSeries = VolDepth02Plot.line(mappingVol02Asks);
+        Vol02AskSeries.name("Vol02Asks");
+
+        ////////////////////////////////////////////////
+
+        ////////////////////////////////////////
+        // create sixth plot
+        var VolDepth1Plot = chart.plot(5);
+        VolDepth1Plot.height("200px")
+          .yGrid(true)
+          .xGrid(true)
+          .yMinorGrid(true)
+          .xMinorGrid(true);
+        // set yAxis labels formatter
+        VolDepth1Plot.yAxis().labels().format("{%Value}{scale:(1)(1)|()}");
+        // set crosshair y-label formatter
+        VolDepth1Plot.crosshair().yLabel().format("{%Value}{scale:(1)(1)|()}");
+
+        Vol1BidSeries = VolDepth1Plot.line(mappingVol1Bids);
+        Vol1BidSeries.name("Vol1Bids");
+
+        Vol1AskSeries = VolDepth1Plot.line(mappingVol1Asks);
+        Vol1AskSeries.name("Vol1Asks");
+
+        ////////////////////////////////////////////////
+
+        // set container id for the chart
+        chart.container("container");
+        // initiate chart drawing
+        chart.draw();
+
+        // create range picker
+        //var rangePicker = anychart.ui.rangePicker();
+        // init range picker
+        //rangePicker.render(chart);
+
+        // create range selector
+        //var rangeSelector = anychart.ui.rangeSelector();
+        // init range selector
+        //rangeSelector.render(chart);
+      });
+    </script>
+  </body>
+</html>
